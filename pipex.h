@@ -31,7 +31,6 @@ char	**ft_splitcpy(const char *s, char c, char **str, int alloc);
 size_t	ft_strlen(const char	*str);
 int		execute(char **path, char **cmdargs, char	**envp);
 void	pipex(char **av, char **envp, int c);
-void	redir(char **env, char **av, int i, int f);
 int		ft_strncmp(const char *s1, const char *s2, size_t n);
 char	*ft_strjoine(char const *s1, char const *s2);
 void	heredoc(char **env, char **av, int i);

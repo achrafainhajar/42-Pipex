@@ -70,10 +70,12 @@ void	pipex(char **av, char **envp, int c)
 	envp[i] = envp[i] + 5;
 	path = ft_split(envp[i], ':');
 	cmdargs = ft_split(av[c], ' ');
+	if (ft_strchr(av[c], '\\'))
+		execve(cmdargs[0], cmdargs, envp);
 	execute(path, cmdargs, envp);
 }
 
-void	redir(char **env, char **av, int i, int f)
+void	redir(char **env, char **av, int i, int f[2])
 {
 	int	fd[2];
 	int	pid;
@@ -85,43 +87,46 @@ void	redir(char **env, char **av, int i, int f)
 	{
 		close(fd[1]);
 		dup2(fd[0], STDIN);
-		waitpid(pid, NULL, 0);
 	}
 	else
 	{
 		close(fd[0]);
-		dup2(fd[1], STDOUT);
-		if (f == STDIN)
+		if (av[i + 2])
+			dup2(fd[1], STDOUT);
+		else
+			dup2(f[1], STDOUT);
+		if (f[0] == STDIN)
 			exit(2);
 		pipex(av, env, i);
 	}
+	close(fd[1]);
+	close(fd[0]);
 }
 
 int	main(int ac, char **av, char **envp)
 {
-	int	f1;
-	int	f2;
+	int	f[2];
 	int	i;
 
 	i = 2;
 	if (ac >= 5)
 	{
-		f2 = openfile(av[ac - 1], 1);
-		dup2(f2, STDOUT);
-		if (ac == 6 && ft_strncmp(av[1], "here_doc", 7) == 0)
+		f[1] = openfile(av[ac - 1], 1);
+		if (ac == 6 && ft_strcmp(av[1], "here_doc") == 0)
 		{
 			heredoc(envp, av, 3);
-			pipex(av, envp, 4);
+			redir(envp, av, 4, f);
 		}
 		else if (ac >= 5)
 		{
-			f1 = openfile(av[1], 0);
-			dup2(f1, STDIN);
-			while (i < ac - 2)
-				redir(envp, av, i++, f1);
-			pipex(av, envp, i);
+			f[0] = openfile(av[1], 0);
+			dup2(f[0], STDIN);
+			while (i < ac - 1)
+				redir(envp, av, i++, f);
 		}
 	}
 	else
 		write(STDERR, "Invalid number of arguments.\n", 29);
+	while
+		(wait(NULL) != -1);
 }

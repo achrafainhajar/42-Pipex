@@ -76,6 +76,8 @@ void	heredoc(char **env, char **av, int i)
 		hernor(fd, av);
 		pipex(av, env, i);
 	}
+	close(fd[1]);
+	close(fd[0]);
 }
 
 int	ft_strcmp(char	*s1, char	*s2)
